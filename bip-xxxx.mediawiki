@@ -9,7 +9,7 @@
 
 == Abstract ==
 
-A method is described for dividing a Bitcoin private key into shares in a manner such that the key can be reconstituted from any sufficiently large subset of the shares but such that individually the shares do not reveal any information about the key. This method is commonly known as Shamir's Secret Sharing Scheme. Additionally, an encoding methodology is proposed to standardize transmission and storage of shares.
+A method is described for decomposing a Bitcoin private key into shares in a manner such that the key can be reconstituted from any sufficiently large subset of the shares but such that individually the shares do not reveal any information about the key. This method is commonly known as Shamir's Secret Sharing Scheme. Additionally, an encoding methodology is proposed to standardize transmission and storage of shares.
 
 == Copyright ==
 
@@ -58,6 +58,20 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 == Motivation ==
 
 The idea of applying Shamir's Secret Sharing Scheme to Bitcoin private keys is frequently discussed within the Bitcoin community, but there has previously existed no technical recommendation for how to generate such shares or how to encode such shares for transmission and storage. This informational BIP seeks to standardize a method and encoding scheme to enable interoperability between multiple wallet implementations that may support Shamir's Secret Sharing functionality.
+
+=== Comparison with Alternatives ===
+
+Bitcoin supports [https://github.com/bitcoin/bips/blob/master/bip-0011.mediawiki a multi-signature scheme], in which redeeming transaction outputs requires signatures by multiple private keys. In theory this achieves the same objective as the application of Shamir's Secret Sharing Scheme to a single private key: namely, multiple pieces of information are required in order to spend the funds at an address, and any sufficiently large subset of the corpus of all such pieces of information suffices. Further, the multi-signature scheme has the advantage that the signatures can be computed independently at separate times and places. However, one critical disadvantage of the multi-signature scheme is the space it consumes in the block chain: all public keys in the corpus must be embedded in the scriptSig of every input that claims a multi-signature output. For this reason, "standard" multi-signature scriptSigs are presently limited to containing no more than three public keys. Even if this limitation were to be lifted, the multi-signature scheme would still yield rather large (and thus costly) scriptSigs. Another, lesser disadvantage of the multi-signature scheme is that it is more cumbersome for users to manage, as not only must users store the private keys, but they must also store a "redeem script."
+
+In comparison to the multi-signature scheme, Shamir's Secret Sharing Scheme has the disadvantage that a sufficient number of shares must be brought together in one place at one time in order to reconstitute the private key that is needed for signing a transaction. However, it has several advantages:
+* No new address format is used, so all first-generation Bitcoin infrastructure already supports it implicitly.
+* Any number of shares can be generated and distributed without increasing the size of the scriptSig.
+* Any subset size can be required for successful key reconstitution without increasing the size of the scriptSig and without increasing the number of signature verification operations necessary to validate the transaction.
+* It can be extended to other secrets besides private keys, such as [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seeds.
+
+=== Use with Multi-signature ===
+
+Shamir's Secret Sharing Scheme can be used in conjunction with the multi-signature scheme mentioned above. As an example, consider a hypothetical organization that stores its operating funds at a 3-of-3 multi-signature address. Spending funds from this address requires signatures from the president, the chief financial officer, and the board of directors. Ideally, getting a signature from the board of directors should require the consent of a majority of the board, but if any single director has possession of the board's private key, then this "majority required" policy cannot be enforced cryptographically. However, if a distinct Shamir share, derived from the board's private key, is distributed to each director, then only a sufficiently large subset of the directors, working together, can reconstitute the board's private key and sign the transaction.
 
 == Rationale ==
 
