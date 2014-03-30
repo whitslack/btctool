@@ -61,7 +61,7 @@ This proposal is hereby placed in the public domain.
 #* The remainder of the payload is the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
 # Encode the payload using Base58Check with an application/version byte as indicated in the table below.
 
-The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding to "1S", which can be taken as standing for "1 Share"
+The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding to "AS", which can be taken as standing for "A Share"
 
 {|
 !Secret Type
