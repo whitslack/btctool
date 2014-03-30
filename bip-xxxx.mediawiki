@@ -20,6 +20,7 @@ This proposal is hereby placed in the public domain.
 * Define ''K'' as the secret, which is an unsigned integer of arbitrary precision.
 * Define ''L'' as the precision of the secret, in bits. For an ordinary Bitcoin private key, ''L'' = 256.
 * Define ''P''<sub>''L''</sub> as the largest prime number that is less than 2<sup>''L''</sup>.
+** ''P''<sub>32</sub> := 2<sup>32</sup> − 5.
 ** ''P''<sub>128</sub> := 2<sup>128</sup> − 159.
 ** ''P''<sub>192</sub> := 2<sup>192</sup> − 237.
 ** ''P''<sub>256</sub> := 2<sup>256</sup> − 189.
@@ -54,11 +55,15 @@ This proposal is hereby placed in the public domain.
 
 This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, ''y''<sub>0</sub>) through (''x''<sub>255</sub>, ''y''<sub>255</sub>). Applications needing more than 256 shares must use some other encoding scheme.
 
-# Construct a (2+''L''/8)-byte payload as follows:
+# Construct a (8+''L''/8)-byte payload as follows:
 #* Byte 0 is the ''prefix byte'', as enumerated in the table below.
 #* Byte 1 is ''j'' for 0 ≤ ''j'' &lt; 256.
+#* Byte 2 is ''M'' for 0 ≤ ''M'' &lt; 256.
+#* Byte 3 - ''L''/8 is Hash<sub>''L''</sub>(''K'')
 #* The remainder of the payload is the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
 # Encode the payload using Base58Check with an application/version byte as indicated in the table below.
+
+The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding to "1S", which can be taken as standing for "1 Share"
 
 {|
 !Secret Type
@@ -68,26 +73,26 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 |-
 |Uncompressed private key
 |align="right"|256
-|align="center"|<code>0x26</code>
-|align="center"|<code>0xF4</code>
+|align="center"|<code>0x1d</code>
+|align="center"|<code>0x02</code>
 |-
 |Compressed private key
 |align="right"|256
-|align="center"|<code>0x26</code>
-|align="center"|<code>0xF6</code>
+|align="center"|<code>0x1d</code>
+|align="center"|<code>0x03</code>
 |-
 |rowspan="3"| [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed
 |align="right"|128
-|align="center"|<code>0x15</code>
-|align="center"|<code>0x3B</code>
+|align="center"|<code>0x0f</code>
+|align="center"|<code>0x04</code>
 |-
 |align="right"|256
-|align="center"|<code>0x26</code>
-|align="center"|<code>0xF8</code>
+|align="center"|<code>0x1d</code>
+|align="center"|<code>0x04</code>
 |-
 |align="right"|512
-|align="center"|<code>0x83</code>
-|align="center"|<code>0x27</code>
+|align="center"|<code>0x61</code>
+|align="center"|<code>0xa5</code>
 |}
 
 == Motivation ==
@@ -108,64 +113,23 @@ In comparison to the multi-signature scheme, Shamir's Secret Sharing Scheme has 
 
 Shamir's Secret Sharing Scheme can be used in conjunction with the multi-signature scheme mentioned above. As an example, consider a hypothetical organization that stores its operating funds at a 3-of-3 multi-signature address. Spending funds from this address requires signatures from the president, the chief financial officer, and the board of directors. Ideally, getting a signature from the board of directors should require the consent of a majority of the board, but if any single director has possession of the board's private key, then this "majority required" policy cannot be enforced cryptographically. However, if a distinct Shamir share, derived from the board's private key, is distributed to each director, then only a sufficiently large subset of the directors, working together, can reconstitute the board's private key and sign the transaction.
 
-== Rationale ==
-
-It is anticipated that 256 shares will be more than enough for most applications of Shamir's Secret Sharing Scheme to Bitcoin private keys. Thus, to reduce encoded share size, the encoding of ''j'' is restricted to one byte.
-
-The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding to "SS", which can be taken as standing for "Shamir Share."
-* '''Uncompressed private key share''' (application/version = <code>0x26</code>, prefix = <code>0xF4</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x26F4000000000000000000000000000000000000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SS98pULHWjxz47D53pb2MkaPrjpPydxx6LNvitmu5LiQaothBsQ7i</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x26F4FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSHiT3VeQv7uC5j5pNfRFYkVLzFbdUPDpVpYrTEFAqCAJ6DjjxkTg</code>
-* '''Compressed private key share''' (application/version = <code>0x26</code>, prefix = <code>0xF6</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x26F6000000000000000000000000000000000000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SSSJ5cf1K6GpL4F6avjp9LvaqEgoHJoVYfGAz1gbGKfv1NZ6DvNKn</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x26F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSasiBpNDGRjU2m7MUpD396gKV7zw9DmGpho7a8wMp9fiet8n1199</code>
-* '''128-bit BIP32 master seed share''' (application/version = <code>0x15</code>, prefix = <code>0x3B</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x153B0000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SS7tk2Xa85gF7WHbvv7GXsGjBeDcJNb</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x153BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSPdma7gckshfcALbrcpUZ7C1QtuUkq</code>
-* '''256-bit BIP32 master seed share''' (application/version = <code>0x26</code>, prefix = <code>0xF8</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x26F8000000000000000000000000000000000000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SSjTLkyj7Saec1H882tbvwGmojZCaye2zz9RF8bHTJdRRwDSN92o2</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x26F8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSt2yL961cjZjyo8taxzpjSsHyzQEp4Jj9b3Nh3dYo7B9DYYw7Q32</code>
-* '''512-bit BIP32 master seed share''' (application/version = <code>0x83</code>, prefix = <code>0x27</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>(0x832700 << 512)</code>
-*** Base58Check encoding: <code>SSR5aFuNgk5pzpFUwVL8oPSrEc3SiGtnCY3HwakZhYfbdkMLHu4LpvTFgrPjMEyUDRfRNn6RmgqsM9bkLWcWmQvypLFWqvoEu</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>(0x832800 << 512) − 1</code>
-*** Base58Check encoding: <code>SSTdQESLSq6N4nCEW252e7PPVVXyWmg8fudNAV6Hgi3QLwda9V3YLr6A4wwLXktSrDi2LLZLtz3AVriApL4gZTmYFZkrk3LH9</code>
-
 == Reference Implementation ==
 
 === Test Vectors ===
 
 * '''Uncompressed private key, ''M'' = 4''' (first 6 shares)
 ** Private key: <code>5KShamir9pqYHfa63F2r9iA44sK4iDdo2gtyAXHCSRwuCLdqgCv</code>
-** Share 0: <code>SS98uzUKLiL29zS43nEVxmr3SMbzdqZ1WguKUeCLxM4yijBfSKFZH</code>
-** Share 1: <code>SS9BS6Wxu8A2x2YawoBSfWdSrLta5uJ3xYT8GxzBWWRhntMg8sgEe</code>
-** Share 2: <code>SS9DudHes1jHhn1o3waDw7RDiR4fwMoEcLwciZuw3bruTaZBo7R2S</code>
-** Share 3: <code>SS9G8VxBXixXmhYnetNKtmYxRpxwC7w2Jo6kTC3DJRYNHF8X7oFEs</code>
-** Share 4: <code>SS9HtdgMCbkWWFrg3JXEfgNFPqRzr6ZstbeV8aRe1mdspKRUoLeMV</code>
-** Share 5: <code>SS9JywdxAz1yFueZVrzSP3Ch1hJVuCaGCTJnQU8pvSKDdEnDDbvEr</code>
+** Share 0: <code>AS2eW4pZMHVt6kffkHE4r4KRvozJKg4AdT9WFJ4XWEz27YfKuemEJwkmnxvS</code>
+** Share 1: <code>AS2fUD941sgcXnHYZztYfboQ9w6pfZfsbCxkCKdLNR7MXjn7ozFKqkriuDfm</code>
+** Share 2: <code>AS2gSMTYgTsJPXwpsTnzCVxaWW3usTf2Af6E6uCpUmenJXfciESshDKYFmQj</code>
+** Share 3: <code>AS2hQVn3M43jbBSozagjuTuFfUKh8hc1P3ZsAJC4BeSBDDNRSUGNCU3AF6ij</code>
+** Share 4: <code>AS2iNe6Y1eDi3taoHGKAFCjiHoQHed7EFcRaZmz7qPHR35w8pncHgfnXv8f1</code>
+** Share 5: <code>AS2jLnR2gEP1gqA65RRbgRaF4SmpcZm5obhHWbz5nL2NZSQMhGP8UyUYvkbf</code>
 * '''Compressed private key, ''M'' = 3''' (first 6 shares)
 ** Private key: <code>L4Shamir4KSghoE4uGhHJMFiG2ZrXRXydMgFvCUaCLgXQ88YKBMz</code>
-** Share 0: <code>SSSJXZMWunNpByN37VeyyFWmL7k6DgsY12Dn1oQsbJaJKqxqRSQN6</code>
-** Share 1: <code>SSSMfRCVsE5ZTqSir7p4Er2ptPzQ2BShxaMR9j2LRqipLKz9nXfEB</code>
-** Share 2: <code>SSSPHtSpbSKF7zD4v9UX3QZspLXkEGNGr5J61EowGU8TBJQdpnahP</code>
-** Share 3: <code>SSSRMiGiYSwHqentuHYwzw5EidkP6kkvFcNiPTky5m6ZqmxcCspmm</code>
-** Share 4: <code>SSSRv9VxGE6Gwc4PDq8mVRbazbG4NqVxb6GNVGt8u9KoLjukFAZT1</code>
-** Share 5: <code>SSSUrgUzeqV3nJHB3C38kt3ZqbqGa8pm2hcuvvA2fmQseDidsmQfm</code>
+** Share 0: <code>AS6vJUsfx6BRmhPekA6kRev4i59BMQWicmLJg53muoJadDf9JV1VcSwnTrJy</code>
+** Share 1: <code>AS6wGdCAcgNmxXLvbkVi5AYsYQPGZ2na2Yccrznc3Ugmck7eDzsaCuYqAMTq</code>
+** Share 2: <code>AS6xEmWfHGYckkdyDsq41Mr1nF1tig3nwZCcqCsrZ3gADvzibPGSYyJD6qdM</code>
+** Share 3: <code>AS6yCuq9writuZWEePXTTNd58VcfrHcz8iCvJM2NKHupZ2T4Jdr72mQxs55g</code>
+** Share 4: <code>AS6zB49ecSsffmiGqSAFC54TtFbywvBYq6WuYmXJTRkgVnKyTkxZGAi2VMZ3</code>
+** Share 5: <code>AS719CU9H34pXjiyriamfioMTL951UNgaYMp1mnLj2UtGgvqrjup1RdS1Fvy</code>
