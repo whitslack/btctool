@@ -57,7 +57,7 @@ This proposal is hereby placed in the public domain.
 #* Byte 0 and 1 are the ''prefix bytes'', as enumerated in the table below.
 #* Byte 2 is ''j'' for 0 ≤ ''j'' &lt; 256.
 #* Byte 3 is ''M'' for 0 ≤ ''M'' &lt; 256.
-#* Byte 4 - 7 is Hash<sub>''L''</sub>(''K'')
+#* Byte 4 - 7 is Hash<sub>4</sub>(''K'')
 #* The remainder of the payload is the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
 # Encode the payload using Base58Check with an application/version byte as indicated in the table below.
 
