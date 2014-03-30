@@ -155,17 +155,17 @@ The application/version bytes and prefix bytes were chosen to force the initial 
 
 * '''Uncompressed private key, ''M'' = 4''' (first 6 shares)
 ** Private key: <code>5KShamir9pqYHfa63F2r9iA44sK4iDdo2gtyAXHCSRwuCLdqgCv</code>
-** Share 0: <code>SS98uzUKLiL29zS43nEVxmr3SMbzdqZ1WguKUeCLxM4yijBfSKFZH</code>
-** Share 1: <code>SS9BS6Wxu8A2x2YawoBSfWdSrLta5uJ3xYT8GxzBWWRhntMg8sgEe</code>
-** Share 2: <code>SS9DudHes1jHhn1o3waDw7RDiR4fwMoEcLwciZuw3bruTaZBo7R2S</code>
-** Share 3: <code>SS9G8VxBXixXmhYnetNKtmYxRpxwC7w2Jo6kTC3DJRYNHF8X7oFEs</code>
-** Share 4: <code>SS9HtdgMCbkWWFrg3JXEfgNFPqRzr6ZstbeV8aRe1mdspKRUoLeMV</code>
-** Share 5: <code>SS9JywdxAz1yFueZVrzSP3Ch1hJVuCaGCTJnQU8pvSKDdEnDDbvEr</code>
+** Share 0: <code>SS98uzUKLiL29zS43nEVxmr3SCYFv2Uy17ytxfgdXhgPfzPdfYb9L</code>
+** Share 1: <code>SS9BS6Wxu8A2x2YawoBSfWdSqshMvU5vRqgrj3T3EaFwefyLG5mek</code>
+** Share 2: <code>SS9DudHes1jHhn1o3waDw7RDhAYnAsEtXoaEampDeSkD5gCRNdiYB</code>
+** Share 3: <code>SS9G8VxBXixXmhYnetNKtmYxP6LYaRDGPMyrQe5DN9E6TLDdQ6Zsb</code>
+** Share 4: <code>SS9HtdgMCbkWWFrg3JXEfgNFJgJh4KGT4sFY5RX4zVnWFyBzWgBVz</code>
+** Share 5: <code>SS9JywdxAz1yFueZVrzSP3CgrwhFXkfqefj7TuSq8LWLyvGGQvqjX</code>
 * '''Compressed private key, ''M'' = 3''' (first 6 shares)
 ** Private key: <code>L4Shamir4KSghoE4uGhHJMFiG2ZrXRXydMgFvCUaCLgXQ88YKBMz</code>
-** Share 0: <code>SSSJXZMWunNpByN37VeyyFWmL7k6DgsY12Dn1oQsbJaJKqxqRSQN6</code>
-** Share 1: <code>SSSMfRCVsE5ZTqSir7p4Er2ptPzQ2BShxaMR9j2LRqipLKz9nXfEB</code>
-** Share 2: <code>SSSPHtSpbSKF7zD4v9UX3QZspLXkEGNGr5J61EowGU8TBJQdpnahP</code>
-** Share 3: <code>SSSRMiGiYSwHqentuHYwzw5EidkP6kkvFcNiPTky5m6ZqmxcCspmm</code>
-** Share 4: <code>SSSRv9VxGE6Gwc4PDq8mVRbazbG4NqVxb6GNVGt8u9KoLjukFAZT1</code>
-** Share 5: <code>SSSUrgUzeqV3nJHB3C38kt3ZqbqGa8pm2hcuvvA2fmQseDidsmQfm</code>
+** Share 0: <code>SSSJXZMWunNpByN37VeyyFWmKxgMVsoVVTJMVpuAAfBiH7AgE7wJs</code>
+** Share 1: <code>SSSMfRCVsE5ZTqSir7p4Er2pt5rvaZJcwSWa7mzuaYweErPuTGoYF</code>
+** Share 2: <code>SSSPHtSpbSKF7zD4v9UX3QZsoiGoM266oocPwLm5Zta6zMECxWGjV</code>
+** Share 3: <code>SSSRMiGiYSwHqentuHYwzw5Ehcq6QyodwRPU2dRppa4kXynvJn6rp</code>
+** Share 4: <code>SSSRv9VxGE6Gwc4PDq8mVRbay2chAioXVR49KXkzehRvsMxgaDtHF</code>
+** Share 5: <code>SSSUrgUzeqV3nJHB3C38kt3ZoVTpqgPB9YBhxGEtS4ex1FzJC7fUh</code>
