@@ -59,7 +59,7 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 #* Byte 0 is the ''prefix byte'', as enumerated in the table below.
 #* Byte 1 is ''j'' for 0 ≤ ''j'' &lt; 256.
 #* Byte 2 is ''M'' for 0 ≤ ''M'' &lt; 256.
-#* Byte 3 - ''L''/8 is Hash<sub>''L''</sub>(''K'')
+#* Byte 3 - 6 is Hash<sub>''L''</sub>(''K'')
 #* The remainder of the payload is the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
 # Encode the payload using Base58Check with an application/version byte as indicated in the table below.
 
