@@ -9,7 +9,7 @@
 
 == Abstract ==
 
-A method is described for decomposing a secret (which may be a Bitcoin private key or a [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed) into shares in a manner such that the secret can be reconstituted from any sufficiently large subset of the shares but such that individually the shares do not reveal any information about the secret. This method is commonly known as Shamir's Secret Sharing Scheme. Additionally, an encoding methodology is proposed to standardize transmission and storage of shares.
+A method is described for decomposing a secret (which may be a Bitcoin private key or a [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed) into shares in a manner such that the secret can be recovered from any sufficiently large subset of the shares but such that individually the shares do not reveal any information about the secret. This method is commonly known as Shamir's Secret Sharing Scheme. Additionally, an encoding methodology is proposed to standardize transmission and storage of shares.
 
 == Copyright ==
 
@@ -20,17 +20,18 @@ This proposal is hereby placed in the public domain.
 * Define ''K'' as the secret, which is an unsigned integer of arbitrary precision.
 * Define ''L'' as the precision of the secret, in bits. For an ordinary Bitcoin private key, ''L'' = 256.
 * Define ''P''<sub>''L''</sub> as the largest prime number that is less than 2<sup>''L''</sup>.
+** ''P''<sub>16</sub> := 2<sup>16</sup> − 15.
 ** ''P''<sub>128</sub> := 2<sup>128</sup> − 159.
 ** ''P''<sub>192</sub> := 2<sup>192</sup> − 237.
 ** ''P''<sub>256</sub> := 2<sup>256</sup> − 189.
 ** ''P''<sub>384</sub> := 2<sup>384</sup> − 317.
 ** ''P''<sub>512</sub> := 2<sup>512</sup> − 569.
-* Define ''M'' as the minimum number of shares to be required when reconstituting the secret.
+* Define ''M'' ≥ 2 as the minimum number of shares to be required when recovering the secret.
 * Define Hash<sub>''L''</sub>(''m'') as a function that:
 *# accepts an argument ''m'', which is an unsigned integer of precision ''L'',
 *# computes the [http://en.wikipedia.org/wiki/SHA-2 SHA-512] message digest of a message consisting of the ''L''-bit binary encoding of ''m'' in big-endian byte order,
 *# interprets the resulting message digest as the 512-bit binary encoding of an unsigned integer ''d'' in big-endian byte order,
-*# returns ''d'' mod ''P''<sub>''L''</sub>.
+*# returns ''d'' mod ''P''<sub>''L''</sub> as an unsigned integer of precision ''L''.
 
 === Derivation of Shares from Secret ===
 
@@ -40,7 +41,7 @@ This proposal is hereby placed in the public domain.
 # Let ''y''<sub>''j''</sub> := ''a''<sub>0</sub>·''x''<sub>''j''</sub><sup>0</sup> + ''a''<sub>1</sub>·''x''<sub>''j''</sub><sup>1</sup> + … + ''a''<sub>''M''−1</sub>·''x''<sub>''j''</sub><sup>''M''−1</sup> (mod ''P''<sub>''L''</sub>) for 0 ≤ ''j'' &lt; ''P''<sub>''L''</sub>−1.
 # The shares are the ordered pairs (''x''<sub>''j''</sub>, ''y''<sub>''j''</sub>) for 0 ≤ ''j'' &lt; ''P''<sub>''L''</sub>−1.
 
-=== Reconstitution of Secret from Shares ===
+=== Recovery of Secret from Shares ===
 
 # Let (''x''<sub>''i''</sub>, ''y''<sub>''i''</sub>) be any ''M'' distinct shares for 0 ≤ ''i'' &lt; ''M''.
 # Let ''n''<sub>''i''</sub> := ''x''<sub>0</sub> · … · ''x''<sub>''i''−1</sub> · ''x''<sub>''i''+1</sub> · … · ''x''<sub>''M''−1</sub> (mod ''P''<sub>''L''</sub>) for 0 ≤ ''i'' &lt; ''M''.
@@ -54,40 +55,69 @@ This proposal is hereby placed in the public domain.
 
 This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, ''y''<sub>0</sub>) through (''x''<sub>255</sub>, ''y''<sub>255</sub>). Applications needing more than 256 shares must use some other encoding scheme.
 
-# Construct a (2+''L''/8)-byte payload as follows:
+# Construct a payload as follows:
 #* Byte 0 is the ''prefix byte'', as enumerated in the table below.
-#* Byte 1 is ''j'' for 0 ≤ ''j'' &lt; 256.
-#* The remainder of the payload is the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
+#* Bytes 1 and 2 are the 16-bit binary encoding of Hash<sub>16</sub>(''K'') in big-endian byte order.
+#* Byte 3 has the value ''M'' − 2.
+#* Byte 4 is ''j'' for 0 ≤ ''j'' &lt; 256.
+#* The remaining bytes in the payload are the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
+# At the user's option, delete bytes 1 through 3, thereby reducing the length of the payload by 3 bytes. These bytes enable the detection of errors during secret recovery at the cost of disclosing information that could potentially assist an adversary.
 # Encode the payload using Base58Check with an application/version byte as indicated in the table below.
 
 {|
 !Secret Type
 !''L''
+!Hash<sub>16</sub>(''K'')<br/>and ''M'' − 2
 !Application/<br/>Version Byte
 !Prefix Byte
 |-
-|Uncompressed private key
-|align="right"|256
+|rowspan="2"|Uncompressed private key
+|align="right" rowspan="2"|256
+|align="center"|Present
+|align="center"|<code>0x1A</code>
+|align="center"|<code>0x46</code>
+|-
+|align="center"|Omitted
 |align="center"|<code>0x26</code>
 |align="center"|<code>0xF4</code>
 |-
-|Compressed private key
-|align="right"|256
+|rowspan="2"|Compressed private key
+|align="right" rowspan="2"|256
+|align="center"|Present
+|align="center"|<code>0x1A</code>
+|align="center"|<code>0x47</code>
+|-
+|align="center"|Omitted
 |align="center"|<code>0x26</code>
 |align="center"|<code>0xF6</code>
 |-
-|rowspan="3"| [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed
-|align="right"|128
-|align="center"|<code>0x15</code>
-|align="center"|<code>0x3B</code>
+|rowspan="6"| [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed
+|align="right" rowspan="2"|128
+|align="center"|Present
+|align="center"|<code>0x0E</code>
+|align="center"|<code>0x53</code>
 |-
-|align="right"|256
+|align="center"|Omitted
+|align="center"|<code>0x15</code>
+|align="center"|<code>0x3D</code>
+|-
+|align="right" rowspan="2"|256
+|align="center"|Present
+|align="center"|<code>0x1A</code>
+|align="center"|<code>0x49</code>
+|-
+|align="center"|Omitted
 |align="center"|<code>0x26</code>
 |align="center"|<code>0xF8</code>
 |-
-|align="right"|512
+|align="right" rowspan="2"|512
+|align="center"|Present
+|align="center"|<code>0x58</code>
+|align="center"|<code>0x7E</code>
+|-
+|align="center"|Omitted
 |align="center"|<code>0x83</code>
-|align="center"|<code>0x27</code>
+|align="center"|<code>0x33</code>
 |}
 
 == Motivation ==
@@ -98,74 +128,45 @@ The idea of applying Shamir's Secret Sharing Scheme to Bitcoin private keys is f
 
 Bitcoin supports [https://github.com/bitcoin/bips/blob/master/bip-0011.mediawiki a multi-signature scheme], in which redeeming transaction outputs requires signatures by multiple private keys. In theory this achieves the same objective as the application of Shamir's Secret Sharing Scheme to a single private key: namely, multiple pieces of information are required in order to spend the funds at an address, and any sufficiently large subset of the corpus of all such pieces of information suffices. Further, the multi-signature scheme has the advantage that the signatures can be computed independently at separate times and places. However, one critical disadvantage of the multi-signature scheme is the space it consumes in the block chain: all public keys in the corpus must be embedded in the scriptSig of every input that claims a multi-signature output. For this reason, "standard" multi-signature scriptSigs are presently limited to containing no more than three public keys. Even if this limitation were to be lifted, the multi-signature scheme would still yield rather large (and thus costly) scriptSigs. Another, lesser disadvantage of the multi-signature scheme is that it is more cumbersome for users to manage, as not only must users store the private keys, but they must also store a "redeem script."
 
-In comparison to the multi-signature scheme, Shamir's Secret Sharing Scheme has the disadvantage that a sufficient number of shares must be brought together in one place at one time in order to reconstitute the private key that is needed for signing a transaction. However, it has several advantages:
+In comparison to the multi-signature scheme, Shamir's Secret Sharing Scheme has the disadvantage that a sufficient number of shares must be brought together in one place at one time in order to recover the private key that is needed for signing a transaction. However, it has several advantages:
 * No new address format is used, so all first-generation Bitcoin infrastructure already supports it implicitly.
 * Any number of shares can be generated and distributed without increasing the size of the scriptSig.
-* Any subset size can be required for successful key reconstitution without increasing the size of the scriptSig and without increasing the number of signature verification operations necessary to validate the transaction.
+* Any subset size can be required for successful key recovery without increasing the size of the scriptSig and without increasing the number of signature verification operations necessary to validate the transaction.
 * It can be extended to other secrets besides private keys, such as [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seeds.
 
 === Use with Multi-signature ===
 
-Shamir's Secret Sharing Scheme can be used in conjunction with the multi-signature scheme mentioned above. As an example, consider a hypothetical organization that stores its operating funds at a 3-of-3 multi-signature address. Spending funds from this address requires signatures from the president, the chief financial officer, and the board of directors. Ideally, getting a signature from the board of directors should require the consent of a majority of the board, but if any single director has possession of the board's private key, then this "majority required" policy cannot be enforced cryptographically. However, if a distinct Shamir share, derived from the board's private key, is distributed to each director, then only a sufficiently large subset of the directors, working together, can reconstitute the board's private key and sign the transaction.
+Shamir's Secret Sharing Scheme can be used in conjunction with the multi-signature scheme mentioned above. As an example, consider a hypothetical organization that stores its operating funds at a 3-of-3 multi-signature address. Spending funds from this address requires signatures from the president, the chief financial officer, and the board of directors. Ideally, getting a signature from the board of directors should require the consent of a majority of the board, but if any single director has possession of the board's private key, then this "majority required" policy cannot be enforced cryptographically. However, if a distinct Shamir share, derived from the board's private key, is distributed to each director, then only a sufficiently large subset of the directors, working together, can recover the board's private key and sign the transaction.
 
 == Rationale ==
 
-It is anticipated that 256 shares will be more than enough for most applications of Shamir's Secret Sharing Scheme to Bitcoin private keys. Thus, to reduce encoded share size, the encoding of ''j'' is restricted to one byte.
+It is anticipated that 256 shares will be more than enough for most applications of Shamir's Secret Sharing Scheme to Bitcoin private keys and BIP32 master seeds. Thus, to reduce encoded share size, the encodings of ''j'' and ''M'' − 2 are restricted to one byte each.
 
 The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding to "SS", which can be taken as standing for "Shamir Share."
-* '''Uncompressed private key share''' (application/version = <code>0x26</code>, prefix = <code>0xF4</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x26F4000000000000000000000000000000000000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SS98pULHWjxz47D53pb2MkaPrjpPydxx6LNvitmu5LiQaothBsQ7i</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x26F4FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSHiT3VeQv7uC5j5pNfRFYkVLzFbdUPDpVpYrTEFAqCAJ6DjjxkTg</code>
-* '''Compressed private key share''' (application/version = <code>0x26</code>, prefix = <code>0xF6</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x26F6000000000000000000000000000000000000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SSSJ5cf1K6GpL4F6avjp9LvaqEgoHJoVYfGAz1gbGKfv1NZ6DvNKn</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x26F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSasiBpNDGRjU2m7MUpD396gKV7zw9DmGpho7a8wMp9fiet8n1199</code>
-* '''128-bit BIP32 master seed share''' (application/version = <code>0x15</code>, prefix = <code>0x3B</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x153B0000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SS7tk2Xa85gF7WHbvv7GXsGjBeDcJNb</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x153BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSPdma7gckshfcALbrcpUZ7C1QtuUkq</code>
-* '''256-bit BIP32 master seed share''' (application/version = <code>0x26</code>, prefix = <code>0xF8</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>0x26F8000000000000000000000000000000000000000000000000000000000000000000</code>
-*** Base58Check encoding: <code>SSjTLkyj7Saec1H882tbvwGmojZCaye2zz9RF8bHTJdRRwDSN92o2</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>0x26F8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code>
-*** Base58Check encoding: <code>SSt2yL961cjZjyo8taxzpjSsHyzQEp4Jj9b3Nh3dYo7B9DYYw7Q32</code>
-* '''512-bit BIP32 master seed share''' (application/version = <code>0x83</code>, prefix = <code>0x27</code>)
-** Lower bound (''j'' = 0)
-*** Value: <code>(0x832700 << 512)</code>
-*** Base58Check encoding: <code>SSR5aFuNgk5pzpFUwVL8oPSrEc3SiGtnCY3HwakZhYfbdkMLHu4LpvTFgrPjMEyUDRfRNn6RmgqsM9bkLWcWmQvypLFWqvoEu</code>
-** Upper bound (''j'' = 255)
-*** Value: <code>(0x832800 << 512) − 1</code>
-*** Base58Check encoding: <code>SSTdQESLSq6N4nCEW252e7PPVVXyWmg8fudNAV6Hgi3QLwda9V3YLr6A4wwLXktSrDi2LLZLtz3AVriApL4gZTmYFZkrk3LH9</code>
+
+The Hash<sub>16</sub>(''K'') and ''M'' − 2 fields are located at the beginning of the payload so that all shares for a given secret will share a common prefix and thus can be visually associated.
 
 == Reference Implementation ==
 
 === Test Vectors ===
 
-* '''Uncompressed private key, ''M'' = 4''' (first 6 shares)
+* '''Uncompressed private key, ''M'' = 2, optional bytes present''' (first 3 shares)
 ** Private key: <code>5KShamir9pqYHfa63F2r9iA44sK4iDdo2gtyAXHCSRwuCLdqgCv</code>
-** Share 0: <code>SS98uzUKLiL29zS43nEVxmr3SCYFv2Uy17ytxfgdXhgPfzPdfYb9L</code>
-** Share 1: <code>SS9BS6Wxu8A2x2YawoBSfWdSqshMvU5vRqgrj3T3EaFwefyLG5mek</code>
-** Share 2: <code>SS9DudHes1jHhn1o3waDw7RDhAYnAsEtXoaEampDeSkD5gCRNdiYB</code>
-** Share 3: <code>SS9G8VxBXixXmhYnetNKtmYxP6LYaRDGPMyrQe5DN9E6TLDdQ6Zsb</code>
-** Share 4: <code>SS9HtdgMCbkWWFrg3JXEfgNFJgJh4KGT4sFY5RX4zVnWFyBzWgBVz</code>
-** Share 5: <code>SS9JywdxAz1yFueZVrzSP3CgrwhFXkfqefj7TuSq8LWLyvGGQvqjX</code>
-* '''Compressed private key, ''M'' = 3''' (first 6 shares)
+** Share 0: <code>SS5vaKnKTTMTzvTMzVwYn2ozXpbbmeo7NogZx3Zo2BiApvzUQNUtGbYAd</code>
+** Share 1: <code>SS5vaKnLgtsESZaAzCRBvuDwoTWi7PZaZe7tF6uKtEpvtss7kz9T1yxKc</code>
+** Share 2: <code>SS5vaKnPs5ZELEYQf82efUYUh6P93uFANCCuP32VpQBqeijR7ywRa1SvJ</code>
+* '''Uncompressed private key, ''M'' = 3, optional bytes omitted''' (first 3 shares)
+** Private key: <code>5KShamir9pqYHfa63F2r9iA44sK4iDdo2gtyAXHCSRwuCLdqgCv</code>
+** Share 0: <code>SS99vNs8gWGcGXYn8BrskaGSLR89EgmFaVz5WvbCSWfQG8G7nxKay</code>
+** Share 1: <code>SS9BiCxZqLH39Qw7EEa8VvBKeWhz2sjPfNZktfiymU9QLES8k4QFF</code>
+** Share 2: <code>SS9DsdSSnxDDH6Fty4pFZjRPcBW5EdikGneCcCsSbmNJszwrikuvu</code>
+* '''Compressed private key, ''M'' = 3, optional bytes present''' (first 3 shares)
 ** Private key: <code>L4Shamir4KSghoE4uGhHJMFiG2ZrXRXydMgFvCUaCLgXQ88YKBMz</code>
-** Share 0: <code>SSSJXZMWunNpByN37VeyyFWmKxgMVsoVVTJMVpuAAfBiH7AgE7wJs</code>
-** Share 1: <code>SSSMfRCVsE5ZTqSir7p4Er2pt5rvaZJcwSWa7mzuaYweErPuTGoYF</code>
-** Share 2: <code>SSSPHtSpbSKF7zD4v9UX3QZsoiGoM266oocPwLm5Zta6zMECxWGjV</code>
-** Share 3: <code>SSSRMiGiYSwHqentuHYwzw5Ehcq6QyodwRPU2dRppa4kXynvJn6rp</code>
-** Share 4: <code>SSSRv9VxGE6Gwc4PDq8mVRbay2chAioXVR49KXkzehRvsMxgaDtHF</code>
-** Share 5: <code>SSSUrgUzeqV3nJHB3C38kt3ZoVTpqgPB9YBhxGEtS4ex1FzJC7fUh</code>
+** Share 0: <code>SSPid9TMDt7BEvh43s7UiqhAi7zWpdDhNu8W6nGYBYbeS1a7zHvu6fWn1</code>
+** Share 1: <code>SSPid9TQMjxACNPoKjCATTrEyiWaNkQGTaddYmUkoVhPquL3x3A47JTJb</code>
+** Share 2: <code>SSPid9TRzDCUvadUysxWXVWhnH3dJNp9E3R7R8aad4TZqExWhXzKBREeq</code>
+* '''Compressed private key, ''M'' = 2, optional bytes omitted''' (first 3 shares)
+** Private key: <code>L4Shamir4KSghoE4uGhHJMFiG2ZrXRXydMgFvCUaCLgXQ88YKBMz</code>
+** Share 0: <code>SSSKHFer2Q7Lzq2CwnuHhmWGeD4hezAKHGMYu24wswFStEN9hmLQK</code>
+** Share 1: <code>SSSLni3MRdJqLoom1tz7vv6CwXa5yZSWQwA5aLBm3sDGeaw7b4Q6M</code>
+** Share 2: <code>SSSNJARrprWKgnbK614xA4g9Er5UJ8ihYbxcFeJaDoB6QwW1WjS3s</code>
