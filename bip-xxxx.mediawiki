@@ -66,12 +66,14 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 
 {|
 !Secret Type
+!Network
 !''L''
 !Hash<sub>16</sub>(''K'')<br/>and ''M'' − 2
 !Application/<br/>Version Byte
 !Prefix Byte
 |-
-|rowspan="2"|Uncompressed private key
+|rowspan="4"|Uncompressed private key
+|align="center" rowspan="2"|Mainnet
 |align="right" rowspan="2"|256
 |align="center"|Present
 |align="center"|<code>0x1A</code>
@@ -81,7 +83,18 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 |align="center"|<code>0x26</code>
 |align="center"|<code>0xF4</code>
 |-
-|rowspan="2"|Compressed private key
+|align="center" rowspan="2"|Testnet
+|align="right" rowspan="2"|256
+|align="center"|Present
+|align="center"|<code>0x1B</code>
+|align="center"|<code>0x4F</code>
+|-
+|align="center"|Omitted
+|align="center"|<code>0x28</code>
+|align="center"|<code>0x7C</code>
+|-
+|rowspan="4"|Compressed private key
+|align="center" rowspan="2"|Mainnet
 |align="right" rowspan="2"|256
 |align="center"|Present
 |align="center"|<code>0x1A</code>
@@ -91,7 +104,18 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 |align="center"|<code>0x26</code>
 |align="center"|<code>0xF6</code>
 |-
-|rowspan="6"| [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed
+|align="center" rowspan="2"|Testnet
+|align="right" rowspan="2"|256
+|align="center"|Present
+|align="center"|<code>0x1B</code>
+|align="center"|<code>0x50</code>
+|-
+|align="center"|Omitted
+|align="center"|<code>0x28</code>
+|align="center"|<code>0x7E</code>
+|-
+|rowspan="12"| [https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki BIP32] master seed
+|align="center" rowspan="6"|Mainnet
 |align="right" rowspan="2"|128
 |align="center"|Present
 |align="center"|<code>0x0E</code>
@@ -118,6 +142,34 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 |align="center"|Omitted
 |align="center"|<code>0x83</code>
 |align="center"|<code>0x33</code>
+|-
+|align="center" rowspan="6"|Testnet
+|align="right" rowspan="2"|128
+|align="center"|Present
+|align="center"|<code>0x0E</code>
+|align="center"|<code>0xE3</code>
+|-
+|align="center"|Omitted
+|align="center"|<code>0x16</code>
+|align="center"|<code>0x12</code>
+|-
+|align="right" rowspan="2"|256
+|align="center"|Present
+|align="center"|<code>0x1B</code>
+|align="center"|<code>0x51</code>
+|-
+|align="center"|Omitted
+|align="center"|<code>0x28</code>
+|align="center"|<code>0x80</code>
+|-
+|align="right" rowspan="2"|512
+|align="center"|Present
+|align="center"|<code>0x5B</code>
+|align="center"|<code>0xF9</code>
+|-
+|align="center"|Omitted
+|align="center"|<code>0x88</code>
+|align="center"|<code>0x5B</code>
 |}
 
 == Motivation ==
@@ -142,7 +194,7 @@ Shamir's Secret Sharing Scheme can be used in conjunction with the multi-signatu
 
 It is anticipated that 256 shares will be more than enough for most applications of Shamir's Secret Sharing Scheme to Bitcoin private keys and BIP32 master seeds. Thus, to reduce encoded share size, the encodings of ''j'' and ''M'' − 2 are restricted to one byte each.
 
-The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding to "SS", which can be taken as standing for "Shamir Share."
+The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding for mainnet keys/seeds to "SS", which can be taken as standing for "Shamir Share." Testnet keys/seeds have a prefix of "TS" to distinguish them visually.
 
 The Hash<sub>16</sub>(''K'') and ''M'' − 2 fields are located at the beginning of the payload so that all shares for a given secret will share a common prefix and thus can be visually associated.
 
