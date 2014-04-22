@@ -58,7 +58,7 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 # Construct a payload as follows:
 #* Byte 0 is the ''prefix byte'', as enumerated in the table below.
 #* Bytes 1 and 2 are the 16-bit binary encoding of Hash<sub>16</sub>(''K'') in big-endian byte order.
-#* Byte 3 has the value ''M'' − 2.
+#* Byte 3 has the value ''M'' − 1.
 #* Byte 4 is ''j'' for 0 ≤ ''j'' &lt; 256.
 #* The remaining bytes in the payload are the ''L''-bit binary encoding of ''y''<sub>''j''</sub> in big-endian byte order, for 0 ≤ ''j'' &lt; 256.
 # At the user's option, delete bytes 1 through 3, thereby reducing the length of the payload by 3 bytes. These bytes enable the detection of errors during secret recovery at the cost of disclosing information that could potentially assist an adversary.
@@ -68,7 +68,7 @@ This encoding scheme is applicable to the first 256 shares: (''x''<sub>0</sub>, 
 !Secret Type
 !Network
 !''L''
-!Hash<sub>16</sub>(''K'')<br/>and ''M'' − 2
+!Hash<sub>16</sub>(''K'')<br/>and ''M'' − 1
 !Application/<br/>Version Byte
 !Prefix Byte
 |-
@@ -192,11 +192,11 @@ Shamir's Secret Sharing Scheme can be used in conjunction with the multi-signatu
 
 == Rationale ==
 
-It is anticipated that 256 shares will be more than enough for most applications of Shamir's Secret Sharing Scheme to Bitcoin private keys and BIP32 master seeds. Thus, to reduce encoded share size, the encodings of ''j'' and ''M'' − 2 are restricted to one byte each.
+It is anticipated that 256 shares will be more than enough for most applications of Shamir's Secret Sharing Scheme to Bitcoin private keys and BIP32 master seeds. Thus, to reduce encoded share size, the encodings of ''j'' and ''M'' − 1 are restricted to one byte each.
 
 The application/version bytes and prefix bytes were chosen to force the initial characters in the Base58Check encoding for mainnet keys/seeds to "SS", which can be taken as standing for "Shamir Share." Testnet keys/seeds have a prefix of "TS" to distinguish them visually.
 
-The Hash<sub>16</sub>(''K'') and ''M'' − 2 fields are located at the beginning of the payload so that all shares for a given secret will share a common prefix and thus can be visually associated.
+The Hash<sub>16</sub>(''K'') and ''M'' − 1 fields are located at the beginning of the payload so that all shares for a given secret will share a common prefix and thus can be visually associated.
 
 == Reference Implementation ==
 
@@ -204,9 +204,9 @@ The Hash<sub>16</sub>(''K'') and ''M'' − 2 fields are located at the beginning
 
 * '''Uncompressed private key, ''M'' = 2, optional bytes present''' (first 3 shares)
 ** Private key: <code>5KShamir9pqYHfa63F2r9iA44sK4iDdo2gtyAXHCSRwuCLdqgCv</code>
-** Share 0: <code>SS5vaKnKTTMTzvTMzVwYn2ozXpbbmeo7NogZx3Zo2BiApvzUQNUtGbYAd</code>
-** Share 1: <code>SS5vaKnLgtsESZaAzCRBvuDwoTWi7PZaZe7tF6uKtEpvtss7kz9T1yxKc</code>
-** Share 2: <code>SS5vaKnPs5ZELEYQf82efUYUh6P93uFANCCuP32VpQBqeijR7ywRa1SvJ</code>
+** Share 0: <code>SS5vaKvu62Wpu6cH8UTZYatPRcmhFuEK2e6qgD1R9kAWvRUE7ep5pRXw4</code>
+** Share 1: <code>SS5vaKvvKU2bLjj68AwChTJLhFgobdznDUY9yGLx1oHGzNLsUGUjHPw6H</code>
+** Share 2: <code>SS5vaKvyVeibEQhKo6YfS2csatZEY9gN22dB7CU7wxeBkDDAqGGYiLdFC</code>
 * '''Uncompressed private key, ''M'' = 3, optional bytes omitted''' (first 3 shares)
 ** Private key: <code>5KShamir9pqYHfa63F2r9iA44sK4iDdo2gtyAXHCSRwuCLdqgCv</code>
 ** Share 0: <code>SS99vNs8gWGcGXYn8BrskaGSLR89EgmFaVz5WvbCSWfQG8G7nxKay</code>
@@ -214,9 +214,9 @@ The Hash<sub>16</sub>(''K'') and ''M'' − 2 fields are located at the beginning
 ** Share 2: <code>SS9DsdSSnxDDH6Fty4pFZjRPcBW5EdikGneCcCsSbmNJszwrikuvu</code>
 * '''Compressed private key, ''M'' = 3, optional bytes present''' (first 3 shares)
 ** Private key: <code>L4Shamir4KSghoE4uGhHJMFiG2ZrXRXydMgFvCUaCLgXQ88YKBMz</code>
-** Share 0: <code>SSPid9TMDt7BEvh43s7UiqhAi7zWpdDhNu8W6nGYBYbeS1a7zHvu6fWn1</code>
-** Share 1: <code>SSPid9TQMjxACNPoKjCATTrEyiWaNkQGTaddYmUkoVhPquL3x3A47JTJb</code>
-** Share 2: <code>SSPid9TRzDCUvadUysxWXVWhnH3dJNp9E3R7R8aad4TZqExWhXzKBREeq</code>
+** Share 0: <code>SSPid9bvrTGY96qyBqdVVPmZbvAcJseu2jYmpwiAK73zXW3shaG38VXcB</code>
+** Share 1: <code>SSPid9byzK7X6YYiThiBE1vdsWgfrzqU7R3uGvvNw49jwPoofKVDupsSR</code>
+** Share 2: <code>SSPid9c1cnMqpknQ7rUXJ3b6g5DindFLssqP9J2CkcuuvjSGQpKXD7ig9</code>
 * '''Compressed private key, ''M'' = 2, optional bytes omitted''' (first 3 shares)
 ** Private key: <code>L4Shamir4KSghoE4uGhHJMFiG2ZrXRXydMgFvCUaCLgXQ88YKBMz</code>
 ** Share 0: <code>SSSKHFer2Q7Lzq2CwnuHhmWGeD4hezAKHGMYu24wswFStEN9hmLQK</code>
