@@ -1,0 +1,6 @@
+[submodule "common"]
+	path = common
+	url = https://github.com/whitslack/common.git
+[submodule "libsatoshi"]
+	path = libsatoshi
+	url = https://github.com/whitslack/libsatoshi.git
