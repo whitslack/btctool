@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 
 #include "applets.h"
@@ -19,6 +20,12 @@ int main(int argc, char *argv[]) {
 	--argc, ++argv;
 	const char *f = argv[0];
 	switch (f[0] | 0x20) {
+		case '-': // -
+			if (std::strcmp(f, "--version") == 0) { // --version
+				std::clog << VERSION << std::endl;
+				return 0;
+			}
+			break;
 		case 'a': // a
 			if ((f[1] | 0x20) == 'd' && (f[2] | 0x20) == 'd' && (f[3] | 0x20) == 'r' && (f[4] | 0x20) == 'e' && (f[5] | 0x20) == 's' && (f[6] | 0x20) == 's') { // address
 				if (f[7] == '\0') { // address
