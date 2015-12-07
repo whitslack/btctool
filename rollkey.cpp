@@ -29,7 +29,7 @@ restart:
 	for (;;) {
 		std::fill(rolls, rolls + sizeof rolls, 0);
 		for (size_t i = 0; i < sizeof rolls; ++i) {
-			uint roll;
+			unsigned roll;
 			if (!(std::cin >> roll)) {
 				return 1;
 			}

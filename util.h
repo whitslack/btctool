@@ -28,6 +28,6 @@ public:
 
 Sink & operator << (Sink &sink, Source &source);
 
-ulong parse_ulong(const char in[], int base = 10);
+unsigned long parse_ulong(const char in[], int base = 10);
 
 std::string read_passphrase();

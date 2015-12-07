@@ -58,9 +58,9 @@ Sink & operator << (Sink &sink, Source &source) {
 	return sink;
 }
 
-ulong parse_ulong(const char in[], int base) {
+unsigned long parse_ulong(const char in[], int base) {
 	char *endptr;
-	ulong r = std::strtoul(in, &endptr, base);
+	unsigned long r = std::strtoul(in, &endptr, base);
 	if (endptr == in || *endptr != '\0') {
 		throw std::ios_base::failure("expected integer");
 	}
